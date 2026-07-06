@@ -108,6 +108,14 @@ CROP_GEOGRAPHIC_RESTRICTIONS = {
         "prohibited_states": ["kerala", "tamil nadu"],
         "message": "Kidney beans prefer cool moderate temperatures and are not suited for Tamil Nadu's hot humid plains."
     },
+    "chickpea": {
+        "prohibited_states": ["kerala", "tamil nadu", "telangana", "andhra pradesh", "puducherry"],
+        "message": "Chickpeas require cool, dry winters and are not suited for hot tropical South Indian plains."
+    },
+    "orange": {
+        "prohibited_states": ["kerala", "tamil nadu", "andhra pradesh", "telangana", "puducherry"],
+        "message": "Oranges require sub-tropical climates or cool hilly terrains, and are not suited for hot tropical plains."
+    },
     "mungbean": {
         # Mung beans can grow in South India but prefer drier, warmer conditions
         "prohibited_states": [],  # No blanket restriction — suitable widely but watch temperature
@@ -334,6 +342,23 @@ def _calculate_agronomic_score(
     return round(final_score, 1), reasons
 
 
+# District-level crop preferences to prioritize locally successful crops
+DISTRICT_CROP_BOOSTS = {
+    # Tamil Nadu
+    ("karur", "tamil nadu"): ["banana", "coconut", "cotton", "maize", "rice", "blackgram", "mungbean", "papaya", "pomegranate"],
+    ("coimbatore", "tamil nadu"): ["maize", "cotton", "coconut", "banana", "blackgram", "mungbean", "grapes", "pomegranate"],
+    ("thanjavur", "tamil nadu"): ["rice", "coconut", "banana", "blackgram", "mungbean", "maize"],
+    ("trichy", "tamil nadu"): ["rice", "banana", "coconut", "cotton", "maize", "blackgram"],
+    ("madurai", "tamil nadu"): ["rice", "cotton", "coconut", "banana", "blackgram", "mungbean", "watermelon", "muskmelon"],
+    # Andhra Pradesh
+    ("guntur", "andhra pradesh"): ["cotton", "maize", "rice", "pigeonpeas", "blackgram"],
+    ("anantapur", "andhra pradesh"): ["pomegranate", "watermelon", "muskmelon", "maize", "pigeonpeas"],
+    # Rajasthan
+    ("jaipur", "rajasthan"): ["maize", "watermelon", "muskmelon", "pomegranate"],
+    ("jodhpur", "rajasthan"): ["mothbeans", "mungbean", "muskmelon", "watermelon"],
+}
+
+
 def recommend_crops(
     nitrogen: float,
     phosphorus: float,
@@ -458,12 +483,22 @@ def _ml_recommend(
             )
             
             # Hybrid Blending Logic:
-            # If the ML model is highly uncertain (max prob < 0.25), use the agronomic rule score as the core confidence.
-            # Otherwise, blend ML confidence with rules to give a premium, high-accuracy suitability score!
             if max_ml_prob < 0.25:
                 suitability_confidence = rule_score / 100.0
             else:
                 suitability_confidence = (0.6 * (rule_score / 100.0)) + (0.4 * ml_prob)
+
+            # Apply district boost
+            if state and district:
+                state_clean = state.lower().strip()
+                district_clean = district.lower().strip()
+                if district_clean == "tiruchirappalli":
+                    district_clean = "trichy"
+                boost_crops = DISTRICT_CROP_BOOSTS.get((district_clean, state_clean), [])
+                if crop_key in boost_crops:
+                    suitability_confidence = min(suitability_confidence * 1.15, 1.0)
+                    if "Highly successful crop in this district" not in reasons:
+                        reasons.append("Highly successful crop in this district")
 
             crop_data = _enrich_crop_data(
                 crop_name, suitability_confidence, soil_type, water_availability,
@@ -525,11 +560,17 @@ def _rule_based_recommend(
                         if not any(d in district_clean for d in restriction["allowed_districts"]):
                             continue
 
-        rule_score, reasons = _calculate_agronomic_score(
-            crop_key, nitrogen, phosphorus, potassium,
-            temperature, humidity, ph, rainfall,
-            soil_type, water_availability
-        )
+        # Apply district boost
+        if state and district:
+            state_clean = state.lower().strip()
+            district_clean = district.lower().strip()
+            if district_clean == "tiruchirappalli":
+                district_clean = "trichy"
+            boost_crops = DISTRICT_CROP_BOOSTS.get((district_clean, state_clean), [])
+            if crop_key in boost_crops:
+                rule_score = min(rule_score * 1.15, 100.0)
+                reasons.append("Highly successful crop in this district")
+
         scores[crop_key] = {"score": rule_score, "reasons": reasons}
 
     # Sort by score and take top N
