@@ -32,11 +32,11 @@ _current_loc_key = (
 )
 if st.session_state.get("_last_soil_loc") != _current_loc_key:
     # Location changed — clear cached soil form values
-    for _k in ["soil_n", "soil_p", "soil_k", "soil_ph", "soil_moisture", "soil_water", "soil_type_selected"]:
+    for _k in ["soil_n", "soil_p", "soil_k", "soil_ph", "soil_moisture", "soil_water", "soil_type_selected", "soil_data"]:
         st.session_state.pop(_k, None)
     st.session_state["_last_soil_loc"] = _current_loc_key
 
-# Initialize form defaults from saved soil_data or standard defaults
+# Initialize form defaults from saved soil_data, detected location, or standard defaults
 if "soil_n" not in st.session_state:
     if st.session_state.get("soil_data"):
         sd = st.session_state.soil_data
@@ -47,6 +47,31 @@ if "soil_n" not in st.session_state:
         st.session_state.soil_moisture = float(sd["moisture"])
         st.session_state.soil_water = float(sd["water_availability"])
         st.session_state.soil_type_selected = sd["soil_type"]
+    elif st.session_state.get("location_data"):
+        loc = st.session_state.location_data
+        soil_data = get_location_soil_data(
+            latitude=st.session_state.get("latitude"),
+            longitude=st.session_state.get("longitude"),
+            state=loc.get("state"),
+            district=loc.get("district"),
+        )
+        if soil_data:
+            st.session_state.soil_n = float(soil_data["nitrogen"])
+            st.session_state.soil_p = float(soil_data["phosphorus"])
+            st.session_state.soil_k = float(soil_data["potassium"])
+            st.session_state.soil_ph = float(soil_data["ph"])
+            st.session_state.soil_moisture = float(soil_data["moisture"])
+            st.session_state.soil_water = float(soil_data["water_availability"])
+            st.session_state.soil_type_selected = soil_data["soil_type"]
+            st.session_state.soil_data = soil_data
+        else:
+            st.session_state.soil_n = 50.0
+            st.session_state.soil_p = 40.0
+            st.session_state.soil_k = 40.0
+            st.session_state.soil_ph = 6.5
+            st.session_state.soil_moisture = 50.0
+            st.session_state.soil_water = 500.0
+            st.session_state.soil_type_selected = "Loamy Soil"
     else:
         st.session_state.soil_n = 50.0
         st.session_state.soil_p = 40.0
