@@ -25,16 +25,27 @@ Enter your soil test values below. If you don't have a soil test report,
 you can get one from the nearest **Soil Health Card center** or estimate values based on your soil type.
 """)
 
+# Detect location change and reset soil values so new location is reflected
+_current_loc_key = (
+    str(st.session_state.get("latitude", "")) + "," +
+    str(st.session_state.get("longitude", ""))
+)
+if st.session_state.get("_last_soil_loc") != _current_loc_key:
+    # Location changed — clear cached soil form values
+    for _k in ["soil_n", "soil_p", "soil_k", "soil_ph", "soil_moisture", "soil_water", "soil_type_selected"]:
+        st.session_state.pop(_k, None)
+    st.session_state["_last_soil_loc"] = _current_loc_key
+
 # Initialize form defaults from saved soil_data or standard defaults
 if "soil_n" not in st.session_state:
     if st.session_state.get("soil_data"):
         sd = st.session_state.soil_data
-        st.session_state.soil_n = sd["nitrogen"]
-        st.session_state.soil_p = sd["phosphorus"]
-        st.session_state.soil_k = sd["potassium"]
-        st.session_state.soil_ph = sd["ph"]
-        st.session_state.soil_moisture = sd["moisture"]
-        st.session_state.soil_water = sd["water_availability"]
+        st.session_state.soil_n = float(sd["nitrogen"])
+        st.session_state.soil_p = float(sd["phosphorus"])
+        st.session_state.soil_k = float(sd["potassium"])
+        st.session_state.soil_ph = float(sd["ph"])
+        st.session_state.soil_moisture = float(sd["moisture"])
+        st.session_state.soil_water = float(sd["water_availability"])
         st.session_state.soil_type_selected = sd["soil_type"]
     else:
         st.session_state.soil_n = 50.0
@@ -75,7 +86,8 @@ if st.session_state.get("location_data"):
             soil_data = get_location_soil_data(
                 latitude=st.session_state.get("latitude"),
                 longitude=st.session_state.get("longitude"),
-                state=state_name
+                state=state_name,
+                district=district,
             )
             
             if soil_data:
