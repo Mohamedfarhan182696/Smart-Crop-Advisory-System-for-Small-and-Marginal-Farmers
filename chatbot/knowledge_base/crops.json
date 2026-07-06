@@ -1,0 +1,50 @@
+{
+  "crops": {
+    "rice": {
+      "name": "Rice (Paddy)",
+      "scientific_name": "Oryza sativa",
+      "family": "Poaceae",
+      "season": "Kharif (June-November)",
+      "duration": "120-150 days",
+      "temperature": "20-35°C",
+      "rainfall": "1000-2000 mm",
+      "soil": "Clay, Loamy, Black Soil",
+      "ph": "5.5-7.5",
+      "irrigation": "Continuous standing water (5cm depth)",
+      "major_states": "West Bengal, UP, Punjab, Tamil Nadu, Andhra Pradesh",
+      "varieties": ["IR-64", "Pusa Basmati", "Sona Masuri", "Ponni", "BPT 5204"],
+      "pests": ["Stem Borer", "Brown Plant Hopper", "Leaf Folder"],
+      "diseases": ["Blast", "Brown Spot", "Sheath Blight", "Bacterial Leaf Blight"]
+    },
+    "wheat": {
+      "name": "Wheat",
+      "scientific_name": "Triticum aestivum",
+      "family": "Poaceae",
+      "season": "Rabi (November-March)",
+      "duration": "120-150 days",
+      "temperature": "10-25°C",
+      "rainfall": "250-500 mm",
+      "soil": "Loamy, Clay Loam",
+      "ph": "6.0-7.5",
+      "major_states": "UP, Punjab, Haryana, MP, Rajasthan",
+      "varieties": ["HD-2967", "PBW-343", "WH-147", "Lok-1"],
+      "pests": ["Aphids", "Termites", "Pink Stem Borer"],
+      "diseases": ["Rust (Yellow, Brown, Black)", "Karnal Bunt", "Loose Smut"]
+    },
+    "cotton": {
+      "name": "Cotton",
+      "scientific_name": "Gossypium hirsutum",
+      "family": "Malvaceae",
+      "season": "Kharif (April-December)",
+      "duration": "150-180 days",
+      "temperature": "21-35°C",
+      "rainfall": "500-1000 mm",
+      "soil": "Black Soil (Regur), Deep Loamy",
+      "ph": "6.0-8.0",
+      "major_states": "Gujarat, Maharashtra, Telangana, AP, Rajasthan",
+      "varieties": ["BT Cotton", "Bunny", "Brahma"],
+      "pests": ["Bollworm", "Whitefly", "Jassids", "Thrips"],
+      "diseases": ["Wilt", "Root Rot", "Bacterial Blight"]
+    }
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "schemes": [
+    {
+      "name": "PM-KISAN",
+      "full_name": "Pradhan Mantri Kisan Samman Nidhi",
+      "benefit": "₹6,000 per year in 3 installments of ₹2,000",
+      "eligibility": "All landholding farmer families with cultivable land",
+      "how_to_apply": "Visit pmkisan.gov.in or nearest CSC center",
+      "documents": "Aadhaar card, Bank account, Land records",
+      "website": "https://pmkisan.gov.in"
+    },
+    {
+      "name": "PMFBY",
+      "full_name": "Pradhan Mantri Fasal Bima Yojana",
+      "benefit": "Crop insurance at 2% premium (Kharif), 1.5% (Rabi), 5% (Commercial/Horticulture)",
+      "eligibility": "All farmers growing notified crops in notified areas",
+      "how_to_apply": "Through bank/CSC center before sowing deadline",
+      "documents": "Land records, Sowing certificate, Bank account, Aadhaar",
+      "website": "https://pmfby.gov.in"
+    },
+    {
+      "name": "Kisan Credit Card (KCC)",
+      "full_name": "Kisan Credit Card Scheme",
+      "benefit": "Short-term crop loans at 4% interest (with prompt repayment). Up to ₹3 lakh.",
+      "eligibility": "All farmers, tenant farmers, sharecroppers, SHG members",
+      "how_to_apply": "Apply at nearest bank branch with land documents",
+      "documents": "Land records, Identity proof, Passport photos",
+      "website": "https://www.pmkisan.gov.in/KCC.aspx"
+    },
+    {
+      "name": "PM-KUSUM",
+      "full_name": "Pradhan Mantri Kisan Urja Suraksha evam Utthan Mahabhiyan",
+      "benefit": "60% subsidy on solar pumps (up to 7.5 HP). Earn from surplus solar power.",
+      "eligibility": "Individual farmers, farmer groups, cooperatives, panchayats",
+      "how_to_apply": "Through state DISCOM or agriculture department",
+      "website": "https://pmkusum.mnre.gov.in"
+    },
+    {
+      "name": "Soil Health Card",
+      "full_name": "Soil Health Card Scheme",
+      "benefit": "Free soil testing with recommendations for fertilizer use",
+      "eligibility": "All farmers",
+      "how_to_apply": "Visit nearest KVK or Soil Testing Lab",
+      "website": "https://soilhealth.dac.gov.in"
+    },
+    {
+      "name": "MKSP",
+      "full_name": "Mahila Kisan Sashaktikaran Pariyojana",
+      "benefit": "Training, resources, and support for women farmers",
+      "eligibility": "Women farmers and women-headed households",
+      "how_to_apply": "Through State Rural Livelihoods Mission (SRLM)"
+    }
+  ]
+}

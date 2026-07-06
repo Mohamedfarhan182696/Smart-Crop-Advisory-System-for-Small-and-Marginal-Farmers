@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      height: 100%;
+    }
+    .whatsapp-mic-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+    .mic-button-wrapper {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 120px;
+      height: 120px;
+    }
+    .mic-btn {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1B5E20, #4CAF50);
+      color: white;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 28px;
+      box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+      z-index: 10;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .mic-btn:active, .mic-btn.recording {
+      transform: scale(1.15);
+      background: linear-gradient(135deg, #B71C1C, #F44336);
+      box-shadow: 0 4px 20px rgba(244, 67, 54, 0.6);
+    }
+    /* Pulsing rings */
+    .pulse-ring {
+      position: absolute;
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: rgba(244, 67, 54, 0.4);
+      z-index: 5;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .mic-btn.recording ~ .pulse-ring-1 {
+      animation: pulse 1.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+    }
+    .mic-btn.recording ~ .pulse-ring-2 {
+      animation: pulse 1.5s cubic-bezier(0.215, 0.61, 0.355, 1) 0.5s infinite;
+    }
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+        opacity: 0.8;
+      }
+      100% {
+        transform: scale(1.8);
+        opacity: 0;
+      }
+    }
+    .status-text {
+      margin-top: 12px;
+      font-size: 14px;
+      color: #A5D6A7;
+      font-weight: 500;
+      text-align: center;
+      transition: color 0.3s;
+      min-height: 20px;
+    }
+    .status-text.recording {
+      color: #ffcdd2;
+    }
+    .timer {
+      font-size: 18px;
+      font-weight: bold;
+      color: #E8F5E9;
+      margin-bottom: 8px;
+      display: none;
+      font-variant-numeric: tabular-nums;
+    }
+    .timer.recording {
+      display: block;
+    }
+    .cancel-instruction {
+      font-size: 12px;
+      color: #cfd8dc;
+      margin-top: 6px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .cancel-instruction.recording {
+      opacity: 0.8;
+    }
+    /* Slide to cancel animation */
+    .slide-arrow {
+      animation: slide-left 1.2s infinite;
+    }
+    @keyframes slide-left {
+      0%, 100% { transform: translateX(0); opacity: 0.5; }
+      50% { transform: translateX(-4px); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="whatsapp-mic-container">
+    <div class="timer" id="timer">00:00</div>
+    <div class="mic-button-wrapper">
+      <button class="mic-btn" id="micBtn">🎙️</button>
+      <div class="pulse-ring pulse-ring-1"></div>
+      <div class="pulse-ring pulse-ring-2"></div>
+    </div>
+    <div class="status-text" id="statusText">Hold to speak</div>
+    <div class="cancel-instruction" id="cancelInstruction">
+      <span class="slide-arrow">⬅️</span> Slide out / release away to cancel
+    </div>
+  </div>
+
+  <script>
+    // Streamlit Component Integration
+    function sendMessage(value) {
+      window.parent.postMessage({
+        isStreamlitMessage: true,
+        type: "streamlit:setComponentValue",
+        value: value
+      }, "*");
+    }
+
+    // Web Audio Recording
+    let mediaRecorder;
+    let audioChunks = [];
+    let isRecording = false;
+    let startTime;
+    let timerInterval;
+    let startX = 0;
+    let startY = 0;
+    let isCancelled = false;
+
+    const micBtn = document.getElementById("micBtn");
+    const statusText = document.getElementById("statusText");
+    const timerElement = document.getElementById("timer");
+    const cancelInstruction = document.getElementById("cancelInstruction");
+
+    // Translations based on current page language
+    const TRANSLATIONS = {
+      en: { hold: "Hold to speak", recording: "Recording... Release to send", processing: "Processing audio...", error: "Microphone error", tooShort: "Recording too short" },
+      ta: { hold: "பேச அழுத்தவும்", recording: "பதிவாகிறது... அனுப்ப விடுக", processing: "ஒலி செயலாக்கப்படுகிறது...", error: "மைக்ரோஃபோன் பிழை", tooShort: "பதிவு மிகவும் குறுகியது" },
+      hi: { hold: "बोलने के लिए दबाएं", recording: "रिकॉर्डिंग... भेजने के लिए छोड़ें", processing: "ऑडियो प्रोसेस हो रहा है...", error: "माइक त्रुटि", tooShort: "रिकॉर्डिंग बहुत छोटी है" },
+      te: { hold: "మాట్లాడటానికి నొక్కండి", recording: "రికార్డ్ అవుతోంది... పంపడానికి వదలండి", processing: "ఆడియో ప్రాసెస్ అవుతోంది...", error: "మైక్ లోపం", tooShort: "రికార్డింగ్ చాలా తక్కువ" },
+      ml: { hold: "സംസാരിക്കാൻ പിടിക്കുക", recording: "റെക്കോർഡ് ചെയ്യുന്നു... അയക്കാൻ വിടുക", processing: "ശബ്ദം പ്രോസസ്സ് ചെയ്യുന്നു...", error: "മൈക്ക് തകരാർ", tooShort: "റെക്കോർഡിംഗ് വളരെ കുറവാണ്" }
+    };
+
+    function getLang() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("lang") || "en";
+    }
+
+    const lang = getLang();
+    const txt = TRANSLATIONS[lang] || TRANSLATIONS.en;
+
+    statusText.textContent = txt.hold;
+
+    // Set up event listeners
+    // Mouse Events
+    micBtn.addEventListener("mousedown", startRecordingEvent);
+    window.addEventListener("mouseup", stopRecordingEvent);
+    
+    // Touch Events
+    micBtn.addEventListener("touchstart", (e) => {
+      e.preventDefault();
+      const touch = e.touches[0];
+      startX = touch.clientX;
+      startY = touch.clientY;
+      startRecordingEvent(e);
+    });
+    window.addEventListener("touchend", (e) => {
+      stopRecordingEvent(e);
+    });
+    window.addEventListener("touchmove", (e) => {
+      if (!isRecording) return;
+      const touch = e.touches[0];
+      const diffX = touch.clientX - startX;
+      const diffY = touch.clientY - startY;
+      // If user drags more than 60px away, cancel
+      if (Math.abs(diffX) > 60 || Math.abs(diffY) > 60) {
+        isCancelled = true;
+        statusText.textContent = "Cancelled";
+      }
+    });
+
+    // Handle mouse drag cancel
+    micBtn.addEventListener("dragstart", (e) => e.preventDefault());
+    
+    function startRecordingEvent(e) {
+      if (isRecording) return;
+      isCancelled = false;
+      
+      navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(stream => {
+          isRecording = true;
+          audioChunks = [];
+          
+          mediaRecorder = new MediaRecorder(stream);
+          mediaRecorder.ondataavailable = event => {
+            audioChunks.push(event.data);
+          };
+          
+          mediaRecorder.onstop = () => {
+            stream.getTracks().forEach(track => track.stop());
+            
+            if (isCancelled) {
+              statusText.textContent = txt.hold;
+              return;
+            }
+            
+            const duration = Date.now() - startTime;
+            if (duration < 800) {
+              statusText.textContent = txt.tooShort;
+              setTimeout(() => {
+                if (!isRecording) statusText.textContent = txt.hold;
+              }, 1500);
+              return;
+            }
+            
+            statusText.textContent = txt.processing;
+            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+            
+            const reader = new FileReader();
+            reader.readAsDataURL(audioBlob);
+            reader.onloadend = () => {
+              sendMessage({
+                audio: reader.result,
+                timestamp: Date.now()
+              });
+            };
+          };
+
+          mediaRecorder.start();
+          startTime = Date.now();
+          
+          // UI changes
+          micBtn.classList.add("recording");
+          statusText.classList.add("recording");
+          timerElement.classList.add("recording");
+          cancelInstruction.classList.add("recording");
+          statusText.textContent = txt.recording;
+          
+          // Timer
+          timerElement.textContent = "00:00";
+          timerInterval = setInterval(() => {
+            const sec = Math.floor((Date.now() - startTime) / 1000);
+            const min = Math.floor(sec / 60);
+            const dispSec = String(sec % 60).padStart(2, '0');
+            const dispMin = String(min % 60).padStart(2, '0');
+            timerElement.textContent = `${dispMin}:${dispSec}`;
+          }, 200);
+          
+        })
+        .catch(err => {
+          console.error("Mic access denied:", err);
+          statusText.textContent = txt.error;
+        });
+    }
+
+    function stopRecordingEvent(e) {
+      if (!isRecording) return;
+      isRecording = false;
+      
+      // UI Reset
+      micBtn.classList.remove("recording");
+      statusText.classList.remove("recording");
+      timerElement.classList.remove("recording");
+      cancelInstruction.classList.remove("recording");
+      
+      clearInterval(timerInterval);
+      
+      if (mediaRecorder && mediaRecorder.state !== "inactive") {
+        mediaRecorder.stop();
+      }
+    }
+  </script>
+</body>
+</html>

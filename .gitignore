@@ -1,0 +1,42 @@
+# Environments
+venv/
+.venv/
+env/
+ENV/
+bin/
+lib/
+include/
+
+# Secrets
+.env
+
+# Python Caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.coverage
+htmlcov/
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Logs & Temporary Files
+logs/
+*.log
+fix_log.txt
+*.tmp
+temp/
+tmp/
+.agents/
+
+# IDE Files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp

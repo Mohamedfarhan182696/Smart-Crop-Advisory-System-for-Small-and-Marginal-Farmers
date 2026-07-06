@@ -1,0 +1,36 @@
+/* ── Hide Streamlit's default auto-generated page nav ── */
+/* We use our own translated custom navigation in app.py  */
+[data-testid="stSidebarNav"] {
+    display: none !important;
+}
+
+/* ── Page link buttons styling ───────────────────────── */
+[data-testid="stPageLink"] > button,
+[data-testid="stPageLink"] > a {
+    background: rgba(76, 175, 80, 0.08);
+    border: 1px solid rgba(76, 175, 80, 0.2);
+    border-radius: 8px;
+    color: #A5D6A7 !important;
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 0.4rem 0.8rem;
+    transition: all 0.2s ease;
+    text-align: left;
+}
+
+[data-testid="stPageLink"]:hover > button,
+[data-testid="stPageLink"]:hover > a {
+    background: rgba(76, 175, 80, 0.2);
+    border-color: rgba(76, 175, 80, 0.5);
+    color: #ffffff !important;
+}
+
+/* ── Footer text ─────────────────────────────────────── */
+.footer-text {
+    text-align: center;
+    color: #546E7A;
+    font-size: 0.8rem;
+    padding: 2rem 0 1rem;
+    border-top: 1px solid rgba(76, 175, 80, 0.1);
+    margin-top: 2rem;
+}
