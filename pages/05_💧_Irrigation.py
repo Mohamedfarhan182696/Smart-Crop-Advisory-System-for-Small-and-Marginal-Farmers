@@ -43,9 +43,15 @@ with col2:
     st.info(f"{t('irr_soil_type', lang)} **{soil_type}**")
 
 # Weather conditions
-weather = st.session_state.get("weather_data", {})
+weather = st.session_state.get("weather_data")
+if not isinstance(weather, dict):
+    weather = {}
 temp = weather.get("temperature", 28.0)
+if temp is None:
+    temp = 28.0
 hum = weather.get("humidity", 65.0)
+if hum is None:
+    hum = 65.0
 
 if st.button(t("btn_calculate", lang), type="primary"):
     with st.spinner(t("irr_calculating", lang)):

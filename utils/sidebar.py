@@ -74,8 +74,9 @@ def render_sidebar():
         else:
             st.warning(f"📍 {t('no_location', lang)}")
 
-        if st.session_state.get("weather_data"):
-            temp = st.session_state.weather_data.get("temperature", "--")
+        weather = st.session_state.get("weather_data")
+        if isinstance(weather, dict):
+            temp = weather.get("temperature", "--")
             st.info(f"🌡️ {temp}°C")
         else:
             st.info(f"🌤 {t('no_weather', lang)}")

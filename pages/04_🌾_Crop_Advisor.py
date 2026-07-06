@@ -33,10 +33,17 @@ if not st.session_state.get("soil_data"):
     st.stop()
 
 soil = st.session_state.soil_data
-weather = st.session_state.get("weather_data", {})
+weather = st.session_state.get("weather_data")
+if not isinstance(weather, dict):
+    weather = {}
 temperature = weather.get("temperature", 28.0)
+if temperature is None:
+    temperature = 28.0
 humidity = weather.get("humidity", 65.0)
-rainfall = weather.get("rainfall", 150.0) if weather.get("rainfall", 0) > 0 else 150.0
+if humidity is None:
+    humidity = 65.0
+raw_rainfall = weather.get("rainfall")
+rainfall = raw_rainfall if raw_rainfall is not None and raw_rainfall > 0 else 150.0
 
 # ── Input Summary ────────────────────────────────────────────────────────
 with st.expander(t("crop_input_params", lang), expanded=False):

@@ -108,11 +108,12 @@ with col1:
     st.page_link("pages/01_🌍_Location.py", label=_set_loc if not st.session_state.location_data else _chg_loc, use_container_width=True)
 
 with col2:
-    if st.session_state.weather_data:
+    weather = st.session_state.get("weather_data")
+    if isinstance(weather, dict):
         st.metric(
             label=_temp_label,
-            value=f"{st.session_state.weather_data.get('temperature', '--')}°C",
-            delta=f"{_hum_label}: {st.session_state.weather_data.get('humidity', '--')}%",
+            value=f"{weather.get('temperature', '--')}°C",
+            delta=f"{_hum_label}: {weather.get('humidity', '--')}%",
         )
     else:
         st.metric(label=_temp_label, value="--°C")
